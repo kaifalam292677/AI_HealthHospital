@@ -109,7 +109,7 @@ st.title("🏥 AI Health Intelligence Dashboard")
 # -----------------------
 # GROQ CLIENT
 # -----------------------
-api_key = st.secrets["GROQ_API_KEY"]
+api_key = st.secrets["GROQ"]["API_KEY"]
 if not api_key:
     st.error("Missing GROQ_API_KEY")
     st.stop()
