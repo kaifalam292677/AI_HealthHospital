@@ -1,3 +1,4 @@
+# app.py
 import streamlit as st
 from groq import Groq
 import os
@@ -22,7 +23,6 @@ def toggle_theme():
 
 st.sidebar.button("✨ Toggle Theme", on_click=toggle_theme)
 dark = st.session_state.theme == "dark"
-
 bg = "#0e1117" if dark else "#f4f6f9"
 text = "#ffffff" if dark else "#000000"
 
@@ -31,87 +31,76 @@ text = "#ffffff" if dark else "#000000"
 # -----------------------
 st.markdown(f"""
 <style>
-
-.main {{
-background-color:{bg};
-color:{text};
-transition:0.5s;
-}}
-
+.main{{ background-color:{bg}; color:{text}; transition:0.5s; }}
 .glass-card {{
-background: rgba(255,255,255,0.08);
-padding: 25px;
-border-radius: 18px;
-backdrop-filter: blur(10px);
-box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-text-align:center;
+    background: rgba(255,255,255,0.08);
+    padding: 25px;
+    border-radius: 18px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    text-align:center;
 }}
-
 .circular-chart {{
-display:block;
-margin:20px auto;
-max-width:220px;
+    display:block;
+    margin:20px auto;
+    max-width:220px;
 }}
-
 .circle-bg {{
-fill:none;
-stroke:#eee;
-stroke-width:3.8;
+    fill:none;
+    stroke:#eee;
+    stroke-width:3.8;
 }}
-
 .circle {{
-fill:none;
-stroke-width:3.8;
-stroke-linecap:round;
+    fill:none;
+    stroke-width:3.8;
+    stroke-linecap:round;
 }}
-
 .avatar-container {{
-position:fixed;
-bottom:30px;
-right:30px;
-width:240px;
-background:rgba(255,255,255,0.08);
-backdrop-filter:blur(12px);
-border-radius:20px;
-padding:20px;
-box-shadow:0 20px 40px rgba(0,0,0,0.4);
+    position:fixed;
+    bottom:30px;
+    right:30px;
+    width:240px;
+    background:rgba(255,255,255,0.08);
+    backdrop-filter:blur(12px);
+    border-radius:20px;
+    padding:20px;
+    box-shadow:0 20px 40px rgba(0,0,0,0.4);
+    transform-style:preserve-3d;
+    transition:transform 0.3s ease;
 }}
-
+.avatar-container:hover {{
+    transform:rotateY(8deg) rotateX(5deg);
+}}
 .avatar-face {{
-width:100px;
-height:100px;
-margin:auto;
-border-radius:50%;
-position:relative;
+    width:100px;
+    height:100px;
+    margin:auto;
+    border-radius:50%;
+    position:relative;
 }}
-
 .eye {{
-width:15px;
-height:15px;
-background:white;
-border-radius:50%;
-position:absolute;
-top:35px;
+    width:15px;
+    height:15px;
+    background:white;
+    border-radius:50%;
+    position:absolute;
+    top:35px;
 }}
-
-.eye.left {{ left:25px; }}
-.eye.right {{ right:25px; }}
-
+.eye.left{{ left:25px; }}
+.eye.right{{ right:25px; }}
 .mouth {{
-width:40px;
-height:20px;
-border-bottom:4px solid white;
-border-radius:0 0 40px 40px;
-position:absolute;
-bottom:25px;
-left:30px;
+    width:40px;
+    height:20px;
+    border-bottom:4px solid white;
+    border-radius:0 0 40px 40px;
+    position:absolute;
+    bottom:25px;
+    left:30px;
 }}
-
 .avatar-status {{
-text-align:center;
-margin-top:15px;
+    text-align:center;
+    margin-top:15px;
 }}
-
 </style>
 """, unsafe_allow_html=True)
 
@@ -120,8 +109,7 @@ st.title("🏥 AI Health Intelligence Dashboard")
 # -----------------------
 # GROQ CLIENT
 # -----------------------
-api_key = os.environ.get("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")
-
+api_key = st.secrets["GROQ"]["API_KEY"]
 if not api_key:
     st.error("Missing GROQ_API_KEY")
     st.stop()
@@ -156,21 +144,19 @@ if not username:
 
 if username not in profiles:
     profiles[username] = {"chat_history": []}
-    save_profiles(profiles)
+save_profiles(profiles)
 
-mode = st.sidebar.radio("Mode", ["Health Risk Analyzer", "Health Chatbot"])
+mode = st.sidebar.radio("Mode", ["Health Risk Analyzer", "Health Chatbot", "Recovery & Wellness Guide"])
 
 # -----------------------
-# RISK ENGINE
+# HEALTH RISK ENGINE
 # -----------------------
 def compute_components(sleep, exercise, water, screen, stress):
-
     sleep_score = max(0, (7 - sleep)) * 3
     exercise_score = (7 - exercise) * 3
     water_score = max(0, (8 - water)) * 2
     screen_score = max(0, (screen - 4)) * 2
     stress_score = {"Low":5, "Medium":15, "High":30}[stress]
-
     components = {
         "Sleep": sleep_score,
         "Exercise": exercise_score,
@@ -178,7 +164,6 @@ def compute_components(sleep, exercise, water, screen, stress):
         "Screen Time": screen_score,
         "Stress": stress_score
     }
-
     total = sum(components.values())
     return components, total
 
@@ -186,23 +171,19 @@ def compute_components(sleep, exercise, water, screen, stress):
 # CIRCULAR GAUGE
 # -----------------------
 def circular_gauge(score):
-
     color = "#00ff99" if score < 30 else "#ffd700" if score < 60 else "#ff4d4d"
-
     st.markdown(f"""
     <svg viewBox="0 0 36 36" class="circular-chart">
     <path class="circle-bg"
-    d="M18 2.0845
-       a 15.9155 15.9155 0 0 1 0 31.831
-       a 15.9155 15.9155 0 0 1 0 -31.831"/>
-
+        d="M18 2.0845
+           a 15.9155 15.9155 0 0 1 0 31.831
+           a 15.9155 15.9155 0 0 1 0 -31.831"/>
     <path class="circle"
-    stroke="{color}"
-    stroke-dasharray="{score},100"
-    d="M18 2.0845
-       a 15.9155 15.9155 0 0 1 0 31.831
-       a 15.9155 15.9155 0 0 1 0 -31.831"/>
-
+        stroke="{color}"
+        stroke-dasharray="{score}, 100"
+        d="M18 2.0845
+           a 15.9155 15.9155 0 0 1 0 31.831
+           a 15.9155 15.9155 0 0 1 0 -31.831"/>
     <text x="18" y="20.35" fill="{text}" font-size="0.5em" text-anchor="middle">{score}%</text>
     </svg>
     """, unsafe_allow_html=True)
@@ -210,42 +191,33 @@ def circular_gauge(score):
 # ============================
 # HEALTH ANALYZER
 # ============================
-
 if mode == "Health Risk Analyzer":
-
     col1, col2 = st.columns(2)
-
     with col1:
         sleep = st.slider("Sleep (hours)", 0, 12, 7)
         exercise = st.slider("Exercise (days/week)", 0, 7, 3)
         water = st.slider("Water (glasses/day)", 0, 15, 6)
-
     with col2:
         screen = st.slider("Screen Time (hours/day)", 0, 16, 6)
         stress = st.selectbox("Stress Level", ["Low","Medium","High"])
-
     components, score = compute_components(sleep, exercise, water, screen, stress)
 
     st.divider()
-
     st.markdown(f"""
     <div class="glass-card">
     <h2>Overall Risk Score</h2>
     <h1>{score}</h1>
     </div>
     """, unsafe_allow_html=True)
-
     circular_gauge(score)
 
-    # Radar chart
+    # Radar Chart
     fig = go.Figure()
-
     fig.add_trace(go.Scatterpolar(
         r=list(components.values()) + [list(components.values())[0]],
         theta=list(components.keys()) + [list(components.keys())[0]],
         fill='toself'
     ))
-
     st.plotly_chart(fig, use_container_width=True)
 
     # Heatmap
@@ -255,78 +227,102 @@ if mode == "Health Risk Analyzer":
         y=["Risk"],
         color_continuous_scale="RdYlGn_r"
     )
-
     st.plotly_chart(heat, use_container_width=True)
 
-    # Pie chart
-    pie = px.pie(
-        values=list(components.values()),
-        names=list(components.keys()),
-        hole=0.4
-    )
-
+    # Pie Chart
+    pie = px.pie(values=list(components.values()), names=list(components.keys()), hole=0.4)
     st.plotly_chart(pie, use_container_width=True)
 
-# ============================
-# CHATBOT
-# ============================
+    # Stacked Bar
+    stack = go.Figure()
+    for k,v in components.items():
+        stack.add_trace(go.Bar(name=k, y=["Total"], x=[v], orientation='h'))
+    stack.update_layout(barmode='stack')
+    st.plotly_chart(stack, use_container_width=True)
 
+# ============================
+# HEALTH CHATBOT
+# ============================
 elif mode == "Health Chatbot":
-
     history = profiles[username]["chat_history"]
-
     for msg in history:
         st.chat_message(msg["role"]).markdown(msg["content"])
-
     user_input = st.chat_input("Ask your AI health assistant...")
-
     if user_input:
-
         history.append({"role":"user","content":user_input})
         st.chat_message("user").markdown(user_input)
-
         response = client.chat.completions.create(
             model="openai/gpt-oss-120b",
-            messages=[{"role":"system","content":"Give general wellness advice only."}] + history[-10:],
+            messages=[{"role":"system","content":"General wellness advice only."}] + history[-10:],
             temperature=0.6
         )
-
         reply = response.choices[0].message.content
-
         history.append({"role":"assistant","content":reply})
         profiles[username]["chat_history"] = history
         save_profiles(profiles)
-
         st.chat_message("assistant").markdown(reply)
 
-# -----------------------
-# EMOTION AVATAR
-# -----------------------
+# ============================
+# RECOVERY & WELLNESS GUIDE
+# ============================
+elif mode == "Recovery & Wellness Guide":
+    st.header("🌿 Recovery & Wellness Guide")
+    st.markdown("""
+**1️⃣ Prioritize Rest & Gentle Recovery**  
+- Sleep 7-9 hours nightly  
+- Light activity only  
+- Elevate legs to reduce swelling  
 
-score = score if mode == "Health Risk Analyzer" else 0
+**2️⃣ Keep Hydrated**  
+- 8-10 cups water/day  
+- Herbal teas & clear broths  
 
-if score < 30:
-    color = "#00ff99"
-    emotion = "😊 Calm"
-elif score < 60:
-    color = "#ffd700"
-    emotion = "😐 Alert"
-else:
-    color = "#ff4d4d"
-    emotion = "🚨 Concerned"
+**3️⃣ Easy-to-Digest, Anti-Inflammatory Foods**  
+- Protein: eggs, Greek yogurt, tofu, lean chicken broth  
+- Complex carbs: oatmeal, rice porridge, mashed sweet potatoes  
+- Vitamin C: citrus, kiwi, bell peppers  
+- Omega-3: flaxseed, chia, walnuts  
+- Hydrating fruits & veggies: watermelon, cucumber, steamed carrots  
 
-st.markdown(f"""
-<div class="avatar-container">
+**4️⃣ Gentle Heat & Cold Therapy**  
+- Warm compress: 15-20 mins  
+- Cold pack: 10-15 mins  
+- Alternate if helpful  
 
-<div class="avatar-face" style="background:{color};box-shadow:0 0 30px {color};">
+**5️⃣ Light Stretching & Mobility**  
+- Seated ankle circles  
+- Gentle calf stretch  
+- Knee-to-chest lying stretch  
 
-<div class="eye left"></div>
-<div class="eye right"></div>
-<div class="mouth"></div>
+**6️⃣ Supportive Home Practices**  
+- Warm shower or bath  
+- Massage  
+- Compression socks  
+- Aromatherapy  
 
-</div>
+**7️⃣ Manage Fever-Like Sensations**  
+- Cool environment 20-22°C  
+- Light clothing  
+- Lukewarm sponge bath  
 
-<div class="avatar-status">{emotion}</div>
+**8️⃣ Lifestyle Factors**  
+- Stay mobile  
+- Limit alcohol & nicotine  
+- Mindful breathing  
+- Stay socially connected  
 
-</div>
-""", unsafe_allow_html=True)
+**9️⃣ When to Seek Professional Care**  
+- Fever >38.6°C lasting >48 hrs  
+- Severe swelling, redness, or pain  
+- Persistent pain >1 week  
+- Numbness or tingling  
+- Any worsening symptoms  
+
+☑ Quick “Comfort-Boost” Checklist:  
+- Drink warm herbal tea  
+- Apply warm compress  
+- 5 min gentle ankle/leg stretches  
+- Lukewarm shower or bath  
+- Elevate legs while resting  
+- Get at least 7 hours sleep
+""")
